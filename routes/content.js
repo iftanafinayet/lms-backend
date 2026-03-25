@@ -1,5 +1,7 @@
 const express = require('express');
 const { Content } = require('../models');
+const auth = require('../middleware/auth');
+const { requireRole, requireEnrolled } = require('../middleware/role');
 const router = express.Router();
 
 router.get('/course/:courseId', [
