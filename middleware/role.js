@@ -23,9 +23,12 @@ module.exports = {
     },
 
     requireEnrolled: async (req, res, next) => {
+        if (req.user.role === 'admin' || req.user.role === 'instructor') {
+            return next();
+        }
         const { Enrollment } = req.app.locals.db;
         const enrollment = await Enrollment.findOne({
-            where: { user_id: req.user.id, course_id: req.params.courseId || req.params.id }
+            where: { userId: req.user.id, courseId: req.params.courseId || req.params.id }
         });
         if (!enrollment) return res.status(403).json({ error: 'Not enrolled in course' });
         req.enrollment = enrollment;

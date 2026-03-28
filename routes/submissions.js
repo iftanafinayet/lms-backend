@@ -19,4 +19,12 @@ router.get('/enrollment/:enrollmentId', async (req, res) => {
     res.json(submissions);
 });
 
+router.get('/assessment/:assessmentId', async (req, res) => {
+    const submissions = await Submission.findAll({
+        where: { assessment_id: req.params.assessmentId },
+        include: 'Grade' // include grade if needed, or adapt to what frontend expects
+    });
+    res.json(submissions);
+});
+
 module.exports = router;

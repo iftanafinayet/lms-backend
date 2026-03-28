@@ -8,8 +8,13 @@ router.get('/course/:courseId', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-    const assessment = await Assessment.create(req.body);
-    res.status(201).json(assessment);
+    try {
+        const assessment = await Assessment.create(req.body);
+        res.status(201).json(assessment);
+    } catch (error) {
+        console.error("Assessment Create Error:", error.message);
+        res.status(500).json({ error: error.message });
+    }
 });
 
 module.exports = router;

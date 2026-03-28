@@ -16,8 +16,13 @@ router.get('/course/:courseId', [
 });
 
 router.post('/', async (req, res) => {
-    const content = await Content.create(req.body);
-    res.status(201).json(content);
+    try {
+        const content = await Content.create(req.body);
+        res.status(201).json(content);
+    } catch (error) {
+        console.error("Content Create Error:", error.message);
+        res.status(500).json({ error: error.message });
+    }
 });
 
 module.exports = router;
