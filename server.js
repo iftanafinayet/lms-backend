@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const morgan = require('morgan');
 const sequelize = require('./config/database');
 
@@ -8,6 +9,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
+app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(morgan('dev'));
 app.use(express.json());
 
@@ -27,7 +29,11 @@ const db = require('./models');
 app.locals.db = db;
 
 app.listen(PORT, async () => {
-    await sequelize.authenticate();
-    console.log('Database connected');
-    console.log(`Server running on port ${PORT}`);
+    try {
+        await sequelize.authenticate();
+        console.log('Database connected');
+        console.log(`Server running on port ${PORT}`);
+    } catch (error) {
+        console.error('Database connection failed:', error.message);
+    }
 });

@@ -1,28 +1,46 @@
 const express = require('express');
 const { Content } = require('../models');
 const auth = require('../middleware/auth');
-const { requireRole, requireEnrolled } = require('../middleware/role');
+const { requireRole, requireCourseOwner, requireEnrolled } = require('../middleware/role');
+const { serializeContent } = require('../utils/serializers');
+
 const router = express.Router();
 
-router.get('/course/:courseId', [
-    auth,
-    requireRole('student', 'instructor', 'admin'),
-    requireEnrolled
-], async (req, res) => {
-    const contents = await Content.findAll({
-        where: { course_id: req.params.courseId }
-    });
-    res.json(contents);
-});
+router.use(auth);
 
-router.post('/', async (req, res) => {
+router.get(
+  '/course/:courseId',
+  [requireRole('student', 'instructor', 'admin'), requireEnrolled],
+  async (req, res) => {
     try {
-        const content = await Content.create(req.body);
-        res.status(201).json(content);
+      const contents = await Content.findAll({
+        where: { course_id: req.params.courseId },
+        order: [['createdAt', 'ASC']],
+      });
+
+      res.json(contents.map(serializeContent));
     } catch (error) {
-        console.error("Content Create Error:", error.message);
-        res.status(500).json({ error: error.message });
+      res.status(500).json({ error: error.message });
     }
-});
+  }
+);
+
+router.post(
+  '/',
+  [requireRole('instructor', 'admin'), requireCourseOwner],
+  async (req, res) => {
+    try {
+      const { title, type, url, course_id } = req.body;
+      if (!title || !type || !url || !course_id) {
+        return res.status(400).json({ error: 'Missing required content fields' });
+      }
+
+      const content = await Content.create({ title, type, url, course_id });
+      res.status(201).json(serializeContent(content));
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
 
 module.exports = router;

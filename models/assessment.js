@@ -4,7 +4,10 @@ module.exports = (sequelize, DataTypes) => {
   class Assessment extends Model {
     static associate(models) {
       Assessment.belongsTo(models.Course, { foreignKey: 'course_id' });
-      // Assessment.hasMany(models.Submission, { foreignKey: 'assessment_id' });
+      Assessment.hasMany(models.Submission, {
+        foreignKey: 'assessment_id',
+        as: 'submissions',
+      });
     }
   }
   Assessment.init({
